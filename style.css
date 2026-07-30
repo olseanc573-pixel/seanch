@@ -1,0 +1,385 @@
+/* ==========================================================================
+   SeanCH - Lofi Pixel Personal Landing Page Design System & Stylesheet
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Dusk / Night Color Palette */
+  --bg-dark: #0d0a1a;
+  --bg-dusk: #15102a;
+  --bg-card: #1d1736;
+  --bg-card-hover: #261f46;
+  --border-pixel: #3c3066;
+  --border-highlight: #ff79c6;
+  
+  /* Accents */
+  --accent-pink: #ff79c6;
+  --accent-purple: #bd93f9;
+  --accent-amber: #ffb86c;
+  --accent-yellow: #f1fa8c;
+  --accent-cyan: #8be9fd;
+  --accent-green: #50fa7b;
+  --accent-red: #ff5555;
+
+  /* Typography */
+  --text-main: #f8f8f2;
+  --text-muted: #9b98c1;
+  --text-dim: #6d6a94;
+
+  /* Shadows */
+  --pixel-shadow: 4px 4px 0px #000000;
+  --pixel-shadow-sm: 2px 2px 0px #000000;
+  --pixel-shadow-lg: 6px 6px 0px #000000;
+
+  /* Fonts */
+  --font-retro: 'Press Start 2P', cursive, monospace;
+  --font-body: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+/* Base Setup */
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Retro Pixel Font Helpers */
+.font-retro {
+  font-family: var(--font-retro);
+  line-height: 1.5;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Crisp Pixel Rendering */
+img, svg, canvas, .pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* CRT Scanlines Overlay */
+.scanlines-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.scanlines-overlay.hidden-scanlines {
+  opacity: 0;
+}
+
+/* ==========================================================================
+   SCROLL REVEAL ANIMATIONS (SLIDE FROM SIDES)
+   ========================================================================== */
+.reveal {
+  opacity: 0 !important;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal-left {
+  transform: translateX(-100px) !important;
+}
+
+.reveal-right {
+  transform: translateX(100px) !important;
+}
+
+.reveal-up {
+  transform: translateY(80px) !important;
+}
+
+.reveal.active {
+  opacity: 1 !important;
+  transform: translate(0, 0) !important;
+}
+
+/* Staggered Delay for Grid Items */
+.grid > .reveal:nth-child(1) { transition-delay: 0.05s; }
+.grid > .reveal:nth-child(2) { transition-delay: 0.15s; }
+.grid > .reveal:nth-child(3) { transition-delay: 0.25s; }
+.grid > .reveal:nth-child(4) { transition-delay: 0.1s; }
+.grid > .reveal:nth-child(5) { transition-delay: 0.2s; }
+.grid > .reveal:nth-child(6) { transition-delay: 0.3s; }
+
+/* Pixel Card / Retro Window Frame */
+.pixel-window {
+  background: var(--bg-card);
+  border: 3px solid var(--border-pixel);
+  box-shadow: var(--pixel-shadow);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pixel-window:hover {
+  border-color: var(--accent-purple);
+}
+
+.pixel-window-header {
+  background: #140f26;
+  border-bottom: 2px solid var(--border-pixel);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.pixel-window-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-amber);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pixel-window-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.pixel-btn-win {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #000;
+  display: inline-block;
+}
+.pixel-btn-win.close { background: var(--accent-red); }
+.pixel-btn-win.min { background: var(--accent-amber); }
+.pixel-btn-win.max { background: var(--accent-green); }
+
+/* Tactile Pixel Buttons */
+.pixel-btn {
+  font-family: var(--font-retro);
+  font-size: 0.7rem;
+  padding: 10px 16px;
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border: 2px solid var(--accent-pink);
+  box-shadow: var(--pixel-shadow);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+  user-select: none;
+  text-decoration: none;
+}
+
+.pixel-btn:hover {
+  background: var(--accent-pink);
+  color: #0d0a1a;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+.pixel-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px #000;
+}
+
+.pixel-btn-primary {
+  background: var(--accent-pink);
+  color: #0d0a1a;
+  border-color: #ffffff;
+}
+
+.pixel-btn-amber {
+  background: var(--accent-amber);
+  color: #0d0a1a;
+  border-color: var(--accent-yellow);
+}
+
+.pixel-btn-cyan {
+  background: var(--accent-cyan);
+  color: #0d0a1a;
+  border-color: #ffffff;
+}
+
+/* Badge Tags */
+.pixel-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  background: #120e24;
+  color: var(--accent-cyan);
+  border: 1px solid var(--border-pixel);
+  display: inline-block;
+}
+.pixel-badge-amber { color: var(--accent-amber); border-color: rgba(255, 184, 108, 0.4); }
+.pixel-badge-pink { color: var(--accent-pink); border-color: rgba(255, 121, 198, 0.4); }
+.pixel-badge-green { color: var(--accent-green); border-color: rgba(80, 250, 123, 0.4); }
+
+/* PIXEL CHARACTERS */
+@keyframes pixelWave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-18deg); }
+  75% { transform: rotate(18deg); }
+}
+.pixel-waving-arm {
+  transform-origin: bottom left;
+  animation: pixelWave 1.2s ease-in-out infinite;
+}
+
+@keyframes pixelJump {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  40% { transform: translateY(-16px) scaleY(1.05); }
+  50% { transform: translateY(-20px) scaleY(1.1); }
+  60% { transform: translateY(-16px) scaleY(1.05); }
+  85% { transform: translateY(0) scaleY(0.95); }
+}
+.pixel-jumping-char {
+  display: inline-block;
+  animation: pixelJump 1.4s ease-in-out infinite;
+  cursor: pointer;
+}
+.pixel-jumping-char:hover {
+  animation: pixelJump 0.6s ease-in-out infinite;
+}
+
+@keyframes pixelWalk {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(40px); }
+  50.1% { transform: translateX(40px) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(-1); }
+}
+.pixel-walking-char {
+  display: inline-block;
+  animation: pixelWalk 8s ease-in-out infinite;
+}
+
+.pixel-speech-bubble {
+  position: relative;
+  background: #140f26;
+  border: 2px solid var(--accent-pink);
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--accent-amber);
+  box-shadow: 2px 2px 0px #000;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Room Scene Glow */
+.room-scene {
+  background: radial-gradient(circle at 65% 55%, var(--lamp-color, rgba(255, 184, 108, 0.25)) 0%, rgba(21, 16, 42, 0.95) 70%);
+  transition: background 0.5s ease;
+}
+.room-scene.lamp-on { --lamp-color: rgba(255, 184, 108, 0.35); }
+.room-scene.lamp-off { --lamp-color: rgba(40, 30, 80, 0.1); }
+
+/* Lofi Radio Widget */
+.lofi-radio-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9000;
+  width: 310px;
+  background: var(--bg-card);
+  border: 3px solid var(--accent-pink);
+  box-shadow: 6px 6px 0px #000;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.lofi-radio-widget.minimized { width: 160px; }
+.lofi-radio-widget.minimized .radio-body { display: none; }
+
+/* Equalizer Bars */
+.eq-bar {
+  width: 4px;
+  background: var(--accent-green);
+  transition: height 0.15s ease;
+  height: 4px;
+}
+.playing .eq-bar:nth-child(1) { animation: eqAnim 0.6s ease-in-out infinite alternate; }
+.playing .eq-bar:nth-child(2) { animation: eqAnim 0.8s ease-in-out infinite alternate 0.2s; }
+.playing .eq-bar:nth-child(3) { animation: eqAnim 0.5s ease-in-out infinite alternate 0.1s; }
+.playing .eq-bar:nth-child(4) { animation: eqAnim 0.9s ease-in-out infinite alternate 0.3s; }
+.playing .eq-bar:nth-child(5) { animation: eqAnim 0.7s ease-in-out infinite alternate 0.15s; }
+
+@keyframes eqAnim {
+  0% { height: 4px; background: var(--accent-green); }
+  100% { height: 20px; background: var(--accent-pink); }
+}
+
+/* Marquee / Ticker text */
+.marquee-container { overflow: hidden; white-space: nowrap; }
+.marquee-text { display: inline-block; animation: marquee 12s linear infinite; }
+@keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+/* Toast Notifications */
+.pixel-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--accent-pink);
+  color: #0d0a1a;
+  font-family: var(--font-retro);
+  font-size: 0.65rem;
+  padding: 10px 20px;
+  border: 2px solid #fff;
+  box-shadow: 4px 4px 0px #000;
+  z-index: 10000;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pixel-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Responsive Overrides */
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr !important; }
+  .lofi-radio-widget { bottom: 12px; right: 12px; width: 280px; }
+}
+
+@media (max-width: 520px) {
+  .font-retro { font-size: 0.85em; }
+  .hero-title { font-size: 1.4rem !important; }
+  .pixel-btn { font-size: 0.6rem; padding: 8px 12px; }
+  .lofi-radio-widget { width: auto; left: 12px; right: 12px; bottom: 10px; }
+  .lofi-radio-widget.minimized { width: 150px; left: auto; }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .pixel-jumping-char, .pixel-walking-char, .pixel-waving-arm { animation: none !important; }
+}
