@@ -384,9 +384,9 @@ img, svg, canvas, .pixelated {
   .pixel-jumping-char, .pixel-walking-char, .pixel-waving-arm { animation: none !important; }
 }
 .intro-overlay {
-  position: relative;
+  position: fixed;
+  inset: 0;
   z-index: 10;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
