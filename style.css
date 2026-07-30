@@ -383,3 +383,59 @@ img, svg, canvas, .pixelated {
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   .pixel-jumping-char, .pixel-walking-char, .pixel-waving-arm { animation: none !important; }
 }
+.intro-overlay {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  padding: 20px;
+}
+
+.intro-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.4rem, 7vw, 3.2rem);
+  color: #ff79c6;
+  text-shadow: 4px 4px 0 #000, 0 0 30px rgba(255,121,198,0.5);
+  letter-spacing: 4px;
+  animation: title-flicker 3s ease-in-out infinite;
+}
+
+@keyframes title-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.scroll-indicator {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: scroll-bounce 1.6s ease-in-out infinite;
+}
+
+.scroll-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: #9b98c1;
+  letter-spacing: 3px;
+}
+
+.scroll-arrow {
+  color: #ffb86c;
+  font-size: 1.3rem;
+}
+
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(12px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-title, .scroll-indicator { animation: none; }
+}
