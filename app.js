@@ -46,6 +46,16 @@ function initScrollReveal() {
   }, observerOptions);
 
   reveals.forEach(el => observer.observe(el));
+
+  // FAILSAFE: paksa semua konten muncul kalau observer gagal trigger
+  setTimeout(() => {
+    reveals.forEach(el => {
+      if (!el.classList.contains('active')) {
+        el.classList.add('active');
+        console.log('[ScrollReveal] Failsafe activated:', el);
+      }
+    });
+  }, 2000);
 }
 
 /* --------------------------------------------------------------------------
