@@ -13,11 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
   initToggles();
   initLiveClock();
   initMobileNav();
+  initScrollIndicatorHide();   
 });
 
-/* --------------------------------------------------------------------------
-   1. IntersectionObserver Scroll Reveal (Fixed Cascade & Triggers)
-   -------------------------------------------------------------------------- */
+function initScrollIndicatorHide() {
+  const indicator = document.querySelector('.scroll-indicator');
+  if (!indicator) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      indicator.classList.add('hidden-on-scroll');
+    } else {
+      indicator.classList.remove('hidden-on-scroll');
+    }
+  }, { passive: true });
+}
 function initScrollReveal() {
   const reveals = document.querySelectorAll('.reveal');
   console.log(`[ScrollReveal] Initialized for ${reveals.length} elements`);
@@ -47,7 +57,6 @@ function initScrollReveal() {
 
   reveals.forEach(el => observer.observe(el));
 
-  // FAILSAFE: paksa semua konten muncul kalau observer gagal trigger
   setTimeout(() => {
     reveals.forEach(el => {
       if (!el.classList.contains('active')) {
@@ -58,9 +67,6 @@ function initScrollReveal() {
   }, 2000);
 }
 
-/* --------------------------------------------------------------------------
-   2. Twinkling Star Background (Canvas)
-   -------------------------------------------------------------------------- */
 function initStarCanvas() {
   const canvas = document.getElementById('star-canvas');
   if (!canvas) return;
@@ -110,9 +116,6 @@ function initStarCanvas() {
   draw();
 }
 
-/* --------------------------------------------------------------------------
-   3. Interactive Pixel Characters & Companions
-   -------------------------------------------------------------------------- */
 const CHAR_QUOTES = [
   "👾 Hi! I'm Pixel Sean's mascot!",
   "🚀 Welcome to SeanCH's Lofi Workspace!",
@@ -130,9 +133,6 @@ function initPixelCharacters() {
   });
 }
 
-/* --------------------------------------------------------------------------
-   4. 8-Bit Retro Sound Effects (SFX) Engine
-   -------------------------------------------------------------------------- */
 let sfxEnabled = true;
 let sfxAudioCtx = null;
 
@@ -178,13 +178,9 @@ function playRetroBeep(freq, duration, type = 'square', vol = 0.03) {
     osc.start();
     osc.stop(sfxAudioCtx.currentTime + duration);
   } catch (e) {
-    // Ignore audio restrictions
   }
 }
 
-/* --------------------------------------------------------------------------
-   5. Interactive Pixel Room Scene (Hero)
-   -------------------------------------------------------------------------- */
 const COFFEE_FORTUNES = [
   "☕ SeanCH's Lofi Brew: 100% Bugs fixed, 0% Caffeine lost!",
   "☕ Wise Dev Saying: 'It works on my machine... and in production!'",
@@ -248,9 +244,6 @@ function initRoomInteractions() {
   }
 }
 
-/* --------------------------------------------------------------------------
-   6. Lofi Radio Widget Controls
-   -------------------------------------------------------------------------- */
 function initRadioUI() {
   const playBtn = document.getElementById('radio-play-btn');
   const nextBtn = document.getElementById('radio-next-btn');
@@ -290,9 +283,6 @@ function initRadioUI() {
   }
 }
 
-/* --------------------------------------------------------------------------
-   7. Projects Filtering & Detail Modal
-   -------------------------------------------------------------------------- */
 const PROJECTS_DATA = {
   'pixelsynth': {
     title: 'PixelSynth Studio',
@@ -447,9 +437,6 @@ function openProjectModal(id) {
   playRetroBeep(600, 0.08, 'square', 0.04);
 }
 
-/* --------------------------------------------------------------------------
-   8. Scanline Toggle
-   -------------------------------------------------------------------------- */
 function initToggles() {
   const scanlineBtn = document.getElementById('scanline-toggle');
   const overlay = document.getElementById('scanline-overlay');
@@ -464,9 +451,6 @@ function initToggles() {
   }
 }
 
-/* --------------------------------------------------------------------------
-   9. Live Retro Clock
-   -------------------------------------------------------------------------- */
 function initLiveClock() {
   const clockElem = document.getElementById('live-clock');
   if (!clockElem) return;
@@ -483,9 +467,6 @@ function initLiveClock() {
   setInterval(updateTime, 1000);
 }
 
-/* --------------------------------------------------------------------------
-   10. Mobile Navigation Drawer
-   -------------------------------------------------------------------------- */
 function initMobileNav() {
   const hamburger = document.getElementById('mobile-menu-btn');
   const navDrawer = document.getElementById('mobile-nav-drawer');
@@ -503,9 +484,6 @@ function initMobileNav() {
   }
 }
 
-/* --------------------------------------------------------------------------
-   11. Toast Notification System
-   -------------------------------------------------------------------------- */
 let toastTimeout = null;
 function showToast(message) {
   let toast = document.getElementById('pixel-toast');
