@@ -1,38 +1,34 @@
 /* ==========================================================================
-   SeanCH - Main Application Logic, Scroll Reveal & Interactivity Script
+   SeanCH - Main Application Logic, 3D Effects & Interactivity Script
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-  initStarCanvas();
-  initScrollReveal();
-  initRoomInteractions();
-  initPixelCharacters();
-  initSFX();
-  initProjectFiltersAndModals();
-  initRadioUI();
-  initToggles();
-  initLiveClock();
-  initMobileNav();
-  initScrollIndicatorHide();   
+  // Core Existing Features (wrapped in try/catch to ensure max reliability)
+  try { initStarCanvas(); } catch (e) { console.warn(e); }
+  try { initScrollReveal(); } catch (e) { console.warn(e); }
+  try { initRoomInteractions(); } catch (e) { console.warn(e); }
+  try { initPixelCharacters(); } catch (e) { console.warn(e); }
+  try { initSFX(); } catch (e) { console.warn(e); }
+  try { initProjectFiltersAndModals(); } catch (e) { console.warn(e); }
+  try { initRadioUI(); } catch (e) { console.warn(e); }
+  try { initToggles(); } catch (e) { console.warn(e); }
+  try { initLiveClock(); } catch (e) { console.warn(e); }
+  try { initMobileNav(); } catch (e) { console.warn(e); }
+
+  // Upgrade Features: Rich 3D & Interactive Visuals
+  try { init3DTiltCards(); } catch (e) { console.warn(e); }
+  try { initHero3DParallax(); } catch (e) { console.warn(e); }
+  try { init3DMascotCube(); } catch (e) { console.warn(e); }
+  try { initCursorGlow(); } catch (e) { console.warn(e); }
 });
 
-function initScrollIndicatorHide() {
-  const indicator = document.querySelector('.scroll-indicator');
-  if (!indicator) return;
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      indicator.classList.add('hidden-on-scroll');
-    } else {
-      indicator.classList.remove('hidden-on-scroll');
-    }
-  }, { passive: true });
-}
+/* --------------------------------------------------------------------------
+   1. IntersectionObserver Scroll Reveal (Fixed Cascade & Triggers)
+   -------------------------------------------------------------------------- */
 function initScrollReveal() {
   const reveals = document.querySelectorAll('.reveal');
   console.log(`[ScrollReveal] Initialized for ${reveals.length} elements`);
 
-  // Check for reduced motion preference
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (prefersReducedMotion) {
@@ -49,7 +45,6 @@ function initScrollReveal() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('active');
-        console.log('[ScrollReveal] Activated:', entry.target);
         obs.unobserve(entry.target);
       }
     });
@@ -57,21 +52,157 @@ function initScrollReveal() {
 
   reveals.forEach(el => observer.observe(el));
 
+  // Failsafe: ensure content becomes visible even if observer fails
   setTimeout(() => {
-    reveals.forEach(el => {
-      if (!el.classList.contains('active')) {
-        el.classList.add('active');
-        console.log('[ScrollReveal] Failsafe activated:', el);
-      }
-    });
-  }, 2000);
+    reveals.forEach(el => el.classList.add('active'));
+  }, 1200);
 }
 
+/* --------------------------------------------------------------------------
+   2. UPGRADE: True 3D Three.js Star Background (With 2D Fallback)
+   -------------------------------------------------------------------------- */
 function initStarCanvas() {
   const canvas = document.getElementById('star-canvas');
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
 
+  // Fallback check if Three.js is not loaded
+  if (typeof THREE === 'undefined') {
+    console.warn('[Three.js] THREE library not loaded. Falling back to 2D stars.');
+    initFallback2DStars(canvas);
+    return;
+  }
+
+  try {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+    const isLowPower = isMobile || (window.devicePixelRatio < 1.5);
+
+    // Three.js WebGLRenderer
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.z = 400;
+
+    // Performance-scaled star particle count
+    const starCount = isLowPower ? (isMobile ? 220 : 400) : 800;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(starCount * 3);
+    const colors = new Float32Array(starCount * 3);
+    const sizes = new Float32Array(starCount);
+
+    const hexPalette = ['#ff79c6', '#8be9fd', '#f1fa8c', '#bd93f9', '#ffffff'];
+
+    for (let i = 0; i < starCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 1400;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 1400;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 900;
+
+      const c = new THREE.Color(hexPalette[Math.floor(Math.random() * hexPalette.length)]);
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+
+      sizes[i] = Math.random() < 0.75 ? 3.0 : 5.0;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+    // Custom pixelated texture for sharp pixel edges
+    const textureCanvas = document.createElement('canvas');
+    textureCanvas.width = 8;
+    textureCanvas.height = 8;
+    const tCtx = textureCanvas.getContext('2d');
+    tCtx.fillStyle = '#ffffff';
+    tCtx.fillRect(1, 1, 6, 6);
+
+    const starTexture = new THREE.CanvasTexture(textureCanvas);
+    starTexture.magFilter = THREE.NearestFilter;
+    starTexture.minFilter = THREE.NearestFilter;
+
+    const material = new THREE.PointsMaterial({
+      size: 4,
+      map: starTexture,
+      transparent: true,
+      vertexColors: true,
+      depthWrite: false,
+      sizeAttenuation: true
+    });
+
+    const starParticles = new THREE.Points(geometry, material);
+    scene.add(starParticles);
+
+    // Mouse & Gyro camera variables
+    let targetCamX = 0;
+    let targetCamY = 0;
+    let currentCamX = 0;
+    let currentCamY = 0;
+
+    const canHover = window.matchMedia('(hover: hover)').matches;
+
+    if (canHover && !prefersReducedMotion) {
+      window.addEventListener('mousemove', (e) => {
+        const mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        const mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+        targetCamX = mouseX * 22; // Subtle angle range
+        targetCamY = -mouseY * 22;
+      });
+    }
+
+    if (!canHover && !prefersReducedMotion && window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e.gamma !== null && e.beta !== null) {
+          targetCamX = (e.gamma / 45) * 15;
+          targetCamY = ((e.beta - 45) / 45) * 15;
+        }
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+
+    function animateStars() {
+      requestAnimationFrame(animateStars);
+
+      if (!prefersReducedMotion) {
+        const elapsedTime = clock.getElapsedTime();
+        const idleX = isLowPower ? 0 : Math.sin(elapsedTime * 0.25) * 8;
+        const idleY = isLowPower ? 0 : Math.cos(elapsedTime * 0.2) * 8;
+
+        if (!isLowPower) {
+          starParticles.rotation.y = elapsedTime * 0.015;
+        }
+
+        currentCamX += (targetCamX + idleX - currentCamX) * 0.04;
+        currentCamY += (targetCamY + idleY - currentCamY) * 0.04;
+
+        camera.position.x = currentCamX;
+        camera.position.y = currentCamY;
+        camera.lookAt(scene.position);
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animateStars();
+
+  } catch (err) {
+    console.warn('[Three.js Starfield Error, using 2D fallback]:', err);
+    initFallback2DStars(canvas);
+  }
+}
+
+function initFallback2DStars(canvas) {
+  const ctx = canvas.getContext('2d');
   let width = canvas.width = window.innerWidth;
   let height = canvas.height = window.innerHeight;
 
@@ -96,26 +227,276 @@ function initStarCanvas() {
 
   function draw() {
     ctx.clearRect(0, 0, width, height);
-
     stars.forEach(star => {
       star.alpha += star.speed;
       if (star.alpha > 1 || star.alpha < 0.1) {
         star.speed = -star.speed;
       }
-
       ctx.save();
       ctx.globalAlpha = Math.max(0.1, Math.min(1, star.alpha));
       ctx.fillStyle = star.color;
       ctx.fillRect(Math.floor(star.x), Math.floor(star.y), star.size, star.size);
       ctx.restore();
     });
-
     requestAnimationFrame(draw);
   }
 
   draw();
 }
 
+/* --------------------------------------------------------------------------
+   3. UPGRADE: 3D Tilt Interaction on .pixel-window Cards
+   -------------------------------------------------------------------------- */
+function init3DTiltCards() {
+  const cards = document.querySelectorAll('.pixel-window');
+  const canHover = window.matchMedia('(hover: hover)').matches;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Disabled on touch devices or reduced motion
+  if (!canHover || prefersReducedMotion) return;
+
+  cards.forEach(card => {
+    // Append specular reflection glow element if missing
+    if (!card.querySelector('.pixel-window-glow')) {
+      const glow = document.createElement('div');
+      glow.className = 'pixel-window-glow';
+      card.appendChild(glow);
+    }
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const relX = (x - rect.width / 2) / (rect.width / 2);
+      const relY = (y - rect.height / 2) / (rect.height / 2);
+
+      const maxTilt = 8; // Max 8 degrees angle cap
+      const rotX = -relY * maxTilt;
+      const rotY = relX * maxTilt;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(1.015, 1.015, 1.015)`;
+      card.style.setProperty('--glow-x', `${x}px`);
+      card.style.setProperty('--glow-y', `${y}px`);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+    });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   4. UPGRADE: Hero Lofi Room Scene 3D-ish Parallax
+   -------------------------------------------------------------------------- */
+function initHero3DParallax() {
+  const hero = document.getElementById('hero');
+  const roomScene = document.getElementById('room-scene');
+  if (!hero || !roomScene) return;
+
+  const canHover = window.matchMedia('(hover: hover)').matches;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!canHover || prefersReducedMotion) return;
+
+  const skyLayer = roomScene.querySelector('.room-sky-layer');
+  const deskLayer = roomScene.querySelector('.room-desk-layer');
+
+  let mouseX = 0, mouseY = 0;
+  let currX = 0, currY = 0;
+  let isHovered = false;
+
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    isHovered = true;
+  });
+
+  hero.addEventListener('mouseleave', () => {
+    isHovered = false;
+  });
+
+  function animateParallax() {
+    requestAnimationFrame(animateParallax);
+
+    const targetX = isHovered ? mouseX : 0;
+    const targetY = isHovered ? mouseY : 0;
+
+    currX += (targetX - currX) * 0.08;
+    currY += (targetY - currY) * 0.08;
+
+    if (skyLayer) {
+      skyLayer.style.transform = `translate3d(${(currX * -10).toFixed(1)}px, ${(currY * -6).toFixed(1)}px, 0)`;
+    }
+
+    if (deskLayer) {
+      deskLayer.style.transform = `translate3d(${(currX * 6).toFixed(1)}px, ${(currY * 4).toFixed(1)}px, 0)`;
+    }
+  }
+
+  animateParallax();
+}
+
+/* --------------------------------------------------------------------------
+   5. UPGRADE: Interactive 3D Pixel Mascot Cube (Three.js Drag & Rotate)
+   -------------------------------------------------------------------------- */
+function init3DMascotCube() {
+  const container = document.getElementById('mascot-3d-container');
+  if (!container) return;
+
+  if (typeof THREE === 'undefined') {
+    container.innerHTML = '<div class="flex items-center justify-center h-full text-2xl">👾</div>';
+    return;
+  }
+
+  try {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const width = container.clientWidth || 72;
+    const height = container.clientHeight || 72;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
+    camera.position.z = 3.6;
+
+    const geometry = new THREE.BoxGeometry(1.65, 1.65, 1.65);
+
+    // Create 6 retro pixel texture faces using Canvas 2D
+    const faceIcons = ['👾', '☕', '🚀', '🎮', '💻', '⚡'];
+    const faceColors = ['#ff79c6', '#ffb86c', '#8be9fd', '#bd93f9', '#50fa7b', '#f1fa8c'];
+
+    const materials = faceIcons.map((icon, i) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+
+      // Outer border & fill
+      ctx.fillStyle = faceColors[i];
+      ctx.fillRect(0, 0, 64, 64);
+
+      ctx.fillStyle = '#120e24';
+      ctx.fillRect(4, 4, 56, 56);
+
+      // Icon text rendering
+      ctx.font = '28px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(icon, 32, 34);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+
+      return new THREE.MeshBasicMaterial({ map: texture });
+    });
+
+    const cube = new THREE.Mesh(geometry, materials);
+    scene.add(cube);
+
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+
+    container.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+      try { container.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    container.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const deltaMove = {
+        x: e.clientX - previousMousePosition.x,
+        y: e.clientY - previousMousePosition.y
+      };
+
+      cube.rotation.y += deltaMove.x * 0.02;
+      cube.rotation.x += deltaMove.y * 0.02;
+
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    const endDrag = (e) => {
+      isDragging = false;
+      try { container.releasePointerCapture(e.pointerId); } catch (err) {}
+    };
+
+    container.addEventListener('pointerup', endDrag);
+    container.addEventListener('pointercancel', endDrag);
+
+    function animateCube() {
+      requestAnimationFrame(animateCube);
+
+      if (!isDragging && !prefersReducedMotion) {
+        cube.rotation.y += 0.012;
+        cube.rotation.x += 0.006;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animateCube();
+
+  } catch (err) {
+    console.warn('[3D Mascot Cube Error]:', err);
+    container.innerHTML = '<div class="flex items-center justify-center h-full text-2xl">👾</div>';
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. UPGRADE: Cursor Reactive Ambient Light Overlay
+   -------------------------------------------------------------------------- */
+function initCursorGlow() {
+  const canHover = window.matchMedia('(hover: hover)').matches;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!canHover || prefersReducedMotion) return;
+
+  let glow = document.getElementById('cursor-glow');
+  if (!glow) {
+    glow = document.createElement('div');
+    glow.id = 'cursor-glow';
+    glow.className = 'cursor-glow-overlay';
+    document.body.appendChild(glow);
+  }
+
+  let targetX = -500, targetY = -500;
+  let currX = -500, currY = -500;
+  let active = false;
+
+  window.addEventListener('pointermove', (e) => {
+    targetX = e.clientX;
+    targetY = e.clientY;
+    if (!active) {
+      active = true;
+      glow.style.opacity = '1';
+    }
+  });
+
+  document.addEventListener('mouseleave', () => {
+    active = false;
+    glow.style.opacity = '0';
+  });
+
+  function renderGlow() {
+    requestAnimationFrame(renderGlow);
+    if (!active) return;
+    currX += (targetX - currX) * 0.15;
+    currY += (targetY - currY) * 0.15;
+    glow.style.transform = `translate3d(${currX.toFixed(1)}px, ${currY.toFixed(1)}px, 0)`;
+  }
+
+  renderGlow();
+}
+
+/* --------------------------------------------------------------------------
+   7. Interactive Pixel Characters & Companions
+   -------------------------------------------------------------------------- */
 const CHAR_QUOTES = [
   "👾 Hi! I'm Pixel Sean's mascot!",
   "🚀 Welcome to SeanCH's Lofi Workspace!",
@@ -133,6 +514,9 @@ function initPixelCharacters() {
   });
 }
 
+/* --------------------------------------------------------------------------
+   8. 8-Bit Retro Sound Effects (SFX) Engine
+   -------------------------------------------------------------------------- */
 let sfxEnabled = true;
 let sfxAudioCtx = null;
 
@@ -178,9 +562,13 @@ function playRetroBeep(freq, duration, type = 'square', vol = 0.03) {
     osc.start();
     osc.stop(sfxAudioCtx.currentTime + duration);
   } catch (e) {
+    // Ignore audio restrictions
   }
 }
 
+/* --------------------------------------------------------------------------
+   9. Interactive Pixel Room Scene (Hero)
+   -------------------------------------------------------------------------- */
 const COFFEE_FORTUNES = [
   "☕ SeanCH's Lofi Brew: 100% Bugs fixed, 0% Caffeine lost!",
   "☕ Wise Dev Saying: 'It works on my machine... and in production!'",
@@ -244,6 +632,9 @@ function initRoomInteractions() {
   }
 }
 
+/* --------------------------------------------------------------------------
+   10. Lofi Radio Widget Controls
+   -------------------------------------------------------------------------- */
 function initRadioUI() {
   const playBtn = document.getElementById('radio-play-btn');
   const nextBtn = document.getElementById('radio-next-btn');
@@ -283,6 +674,9 @@ function initRadioUI() {
   }
 }
 
+/* --------------------------------------------------------------------------
+   11. Projects Filtering & Detail Modal
+   -------------------------------------------------------------------------- */
 const PROJECTS_DATA = {
   'pixelsynth': {
     title: 'PixelSynth Studio',
@@ -437,6 +831,9 @@ function openProjectModal(id) {
   playRetroBeep(600, 0.08, 'square', 0.04);
 }
 
+/* --------------------------------------------------------------------------
+   12. Scanline Toggle
+   -------------------------------------------------------------------------- */
 function initToggles() {
   const scanlineBtn = document.getElementById('scanline-toggle');
   const overlay = document.getElementById('scanline-overlay');
@@ -451,6 +848,9 @@ function initToggles() {
   }
 }
 
+/* --------------------------------------------------------------------------
+   13. Live Retro Clock
+   -------------------------------------------------------------------------- */
 function initLiveClock() {
   const clockElem = document.getElementById('live-clock');
   if (!clockElem) return;
@@ -467,6 +867,9 @@ function initLiveClock() {
   setInterval(updateTime, 1000);
 }
 
+/* --------------------------------------------------------------------------
+   14. Mobile Navigation Drawer
+   -------------------------------------------------------------------------- */
 function initMobileNav() {
   const hamburger = document.getElementById('mobile-menu-btn');
   const navDrawer = document.getElementById('mobile-nav-drawer');
@@ -484,6 +887,9 @@ function initMobileNav() {
   }
 }
 
+/* --------------------------------------------------------------------------
+   15. Toast Notification System
+   -------------------------------------------------------------------------- */
 let toastTimeout = null;
 function showToast(message) {
   let toast = document.getElementById('pixel-toast');
